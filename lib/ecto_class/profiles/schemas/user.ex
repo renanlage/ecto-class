@@ -31,6 +31,10 @@ defmodule EctoClass.Profiles.Schemas.User do
   @required_fields [:username, :document, :legal_name]
   @optional_fields [:email_verified, :social_name, :document_type]
 
+  # Embedded casting and validations
+  @embedded_phones_required [:ddd, :number]
+  @embedded_address_required [:street, :district, :number, :state]
+
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "users" do
@@ -40,6 +44,21 @@ defmodule EctoClass.Profiles.Schemas.User do
     field :legal_name, :string
     field :document, :string
     field :document_type, :string, default: "cpf"
+
+    embeds_many :phones, Phones, on_replace: :delete do
+      field :country_code, :string, default: "+55"
+      field :ddd, :string
+      field :number, :string
+    end
+
+    embeds_one :address, Address, on_replace: :update do
+      field :zip_code, :string
+      field :street, :string
+      field :district, :string
+      field :state, :string
+      field :number, :string
+      field :reference, :string
+    end
 
     # Relations
     has_one :password_credential, Password, on_replace: :update
@@ -54,6 +73,8 @@ defmodule EctoClass.Profiles.Schemas.User do
     %__MODULE__{}
     |> cast(params, @required_fields ++ @optional_fields)
     |> cast_assoc(:password_credential, with: &Password.changeset/2)
+    |> cast_embed(:phones, with: &embedded_changeset_phone/2)
+    |> cast_embed(:address, with: &embedded_changeset_address/2)
     |> validate_required(@required_fields)
     |> validate_length(:legal_name, min: 2)
     |> validate_inclusion(:document_type, @acceptable_document_types)
@@ -67,10 +88,24 @@ defmodule EctoClass.Profiles.Schemas.User do
     model
     |> cast(params, @required_fields ++ @optional_fields)
     |> cast_assoc(:password_credential, with: &Password.changeset/2)
+    |> cast_embed(:phones, with: &embedded_changeset_phone/2)
+    |> cast_embed(:address, with: &embedded_changeset_address/2)
     |> validate_inclusion(:document_type, @acceptable_document_types)
     |> validate_length(:social_name, min: 2)
     |> validate_length(:legal_name, min: 2)
     |> validate_length(:document, min: 11)
     |> unique_constraint(:username)
+  end
+
+  defp embedded_changeset_phone(model, params) when is_map(params) do
+    model
+    |> cast(params, @embedded_phones_required ++ [:country_code])
+    |> validate_required(@embedded_phones_required)
+  end
+
+  defp embedded_changeset_address(model, params) when is_map(params) do
+    model
+    |> cast(params, @embedded_address_required ++ [:zip_code, :reference])
+    |> validate_required(@embedded_address_required)
   end
 end

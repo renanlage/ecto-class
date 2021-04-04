@@ -11,7 +11,6 @@ defmodule EctoClass.Profiles.Schemas.Affiliation do
 
   @typedoc "An ecto struct representation of affiliations table"
   @type t :: %__MODULE__{
-          id: Ecto.UUID.t(),
           user: User.t() | Ecto.Association.NotLoaded.t(),
           user_id: Ecto.UUID.t(),
           organization: Organization.t() | Ecto.Association.NotLoaded.t(),
@@ -23,13 +22,14 @@ defmodule EctoClass.Profiles.Schemas.Affiliation do
         }
 
   # Fields used on casting and validations
+  @required_fields [:user_id, :organization_id]
   @optional_fields [:is_business_partner, :is_business_partner_checked_at]
 
-  @primary_key {:id, :binary_id, autogenerate: true}
+  @primary_key false
   @foreign_key_type :binary_id
   schema "affiliations" do
     field :is_business_partner, :boolean, default: false
-    field :is_business_partner_checked_at, :utc_datetime, default: DateTime.utc_now()
+    field :is_business_partner_checked_at, :utc_datetime
 
     # Relations
     belongs_to :user, User
@@ -39,8 +39,15 @@ defmodule EctoClass.Profiles.Schemas.Affiliation do
   end
 
   @doc "Generates an `%Ecto.Changeset{}` to update the given model on database."
+  @spec changeset(params :: map()) :: Ecto.Changeset.t()
+  def changeset(params) when is_map(params) do
+    %__MODULE__{}
+    |> cast(params, @required_fields ++ @optional_fields)
+    |> validate_required(@required_fields)
+  end
+
+  @doc "Generates an `%Ecto.Changeset{}` to update the given model on database."
   @spec changeset(model :: __MODULE__.t(), params :: map()) :: Ecto.Changeset.t()
-  def changeset(%__MODULE__{} = model, params)
-      when is_map(params),
-      do: cast(model, params, @optional_fields)
+  def changeset(%__MODULE__{} = model, params) when is_map(params),
+    do: cast(model, params, @optional_fields)
 end

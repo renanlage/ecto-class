@@ -11,6 +11,10 @@ defmodule EctoClass.Repo.Migrations.CreateUserTable do
       add :document, :string, null: false
       add :document_type, :string, null: false, default: "cpf"
 
+      # Jsonb fields
+      add :phones, {:array, :jsonb}
+      add :address, :jsonb
+
       timestamps()
     end
 
