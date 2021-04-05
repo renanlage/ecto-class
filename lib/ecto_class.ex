@@ -57,4 +57,39 @@ defmodule EctoClass do
     Queries in Ecto are secure, avoiding common problems like SQL Injection, while still being composable,
     allowing developers to build queries piece by piece instead of all at once
   """
+
+  alias EctoClass.Repo
+  alias EctoClass.Inputs.Signup
+  alias EctoClass.Profiles.{Affiliations, Organizations, Users}
+
+  @doc "Creates a new user and organization register"
+  @spec signup(params :: map()) ::
+          {:ok, %{user: struct(), organization: struct()}}
+          | {:error, Ecto.Changeset.t()}
+  def signup(params) when is_map(params) do
+    Repo.transaction(fn ->
+      with {:ok, input} <- cast_and_apply(Signup, params),
+           {:ok, user} <- Users.create(Map.from_struct(input.user)),
+           {:ok, org} <- Organizations.create(Map.from_struct(input.organization)),
+           {:ok, _aff} <-
+             Affiliations.create(%{
+               user_id: user.id,
+               organization_id: org.id,
+               is_business_partner: input.is_business_partner
+             }) do
+        %{user: user, organization: org}
+      else
+        {:error, reason} -> Repo.rollback(reason)
+      end
+    end)
+  end
+
+  defp cast_and_apply(schema, params) do
+    params
+    |> schema.changeset()
+    |> case do
+      %{valid?: true} = changeset -> {:ok, Ecto.Changeset.apply_changes(changeset)}
+      %{valid?: false} = changeset -> {:error, changeset}
+    end
+  end
 end

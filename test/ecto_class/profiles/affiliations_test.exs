@@ -6,11 +6,7 @@ defmodule EctoClass.Profiles.AffiliationsTest do
   alias EctoClass.Profiles.Schemas.{Affiliation, Organization, User}
 
   setup do
-    user = insert!(:user)
-    organization = insert!(:organization)
-    affiliation = insert!(:affiliation, is_business_partner: true)
-
-    {:ok, user: user, organization: organization, affiliation: affiliation}
+    {:ok, affiliation: insert!(:affiliation, is_business_partner: true)}
   end
 
   describe "#{Affiliations}.create/1" do

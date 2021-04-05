@@ -74,7 +74,7 @@ defmodule EctoClass.Profiles.Schemas.User do
     |> cast(params, @required_fields ++ @optional_fields)
     |> cast_assoc(:password_credential, required: false, with: &Password.changeset/2)
     |> cast_embed(:phones, with: &embedded_changeset_phone/2)
-    |> cast_embed(:address, required: true, with: &embedded_changeset_address/2)
+    |> cast_embed(:address, with: &embedded_changeset_address/2)
     |> validate_required(@required_fields)
     |> validate_length(:legal_name, min: 2)
     |> validate_inclusion(:document_type, @acceptable_document_types)

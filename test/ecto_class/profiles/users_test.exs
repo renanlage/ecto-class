@@ -20,8 +20,7 @@ defmodule EctoClass.Profiles.UsersTest do
                 errors: [
                   {:username, {"can't be blank", _}},
                   {:document, {"can't be blank", _}},
-                  {:legal_name, {"can't be blank", _}},
-                  {:address, {"can't be blank", _}}
+                  {:legal_name, {"can't be blank", _}}
                 ]
               }} = Users.create(%{})
     end
