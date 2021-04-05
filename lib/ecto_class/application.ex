@@ -1,7 +1,10 @@
 defmodule EctoClass.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
-  @moduledoc false
+  @moduledoc """
+  Application supervisor declaration.
+
+  See https://hexdocs.pm/elixir/Application.html for
+  more information on OTP Applications
+  """
 
   use Application
 

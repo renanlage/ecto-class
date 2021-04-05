@@ -9,3 +9,5 @@ config :ecto_class, EctoClass.Repo,
   password: "ecto_class",
   hostname: "localhost",
   port: 5432
+
+import_config "./#{Mix.env()}.exs"

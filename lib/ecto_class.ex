@@ -1,18 +1,9 @@
 defmodule EctoClass do
   @moduledoc """
-  Documentation for `EctoClass`.
+  Exemple postgress and Ecto application.
+
+  EctoClass is an application created for Stones Elixir Formation Program
+  students in order to serve as an exemple of an application running
+  a postgress database with Ecto.
   """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> EctoClass.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
 end
