@@ -39,6 +39,10 @@ defmodule EctoClass.MixProject do
       {:bcrypt_elixir, "~> 2.2"},
       {:pbkdf2_elixir, "~> 1.2"},
 
+      # Library for validating cpf and cpnj for
+      # exemple purposes
+      {:brcpfcnpj, "~> 0.2.1"},
+
       # Tools for code quality
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},

@@ -47,6 +47,7 @@ defmodule EctoClass.Profiles.Schemas.Organization do
     |> validate_required(@required_fields)
     |> validate_length(:legal_name, min: 2)
     |> validate_inclusion(:document_type, @acceptable_document_types)
+    |> validate_document_by_type()
   end
 
   @doc "Generates an `%Ecto.Changeset{}` to update the given model on database."
@@ -58,6 +59,27 @@ defmodule EctoClass.Profiles.Schemas.Organization do
     |> validate_length(:company_name, min: 2)
     |> validate_length(:legal_name, min: 2)
     |> validate_length(:document, min: 14)
+    |> validate_document_by_type()
     |> unique_constraint(:username)
   end
+
+  # This could be converted into a custom ecto type
+  # For more info check https://hexdocs.pm/ecto/Ecto.Type.html
+  defp validate_document_by_type(
+         %Ecto.Changeset{
+           changes: %{
+             document: document,
+             document_type: "cnpj"
+           }
+         } = changeset
+       ) do
+    %Cnpj{number: document}
+    |> Brcpfcnpj.cnpj_valid?()
+    |> case do
+      true -> add_error(changeset, :document, "Invalid CNPJ")
+      false -> changeset
+    end
+  end
+
+  defp validate_document_by_type(changeset), do: changeset
 end
