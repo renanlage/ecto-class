@@ -1,7 +1,8 @@
 defmodule EctoClass.Factory do
   @moduledoc false
 
-  alias EctoClass.Profiles.Schemas.Organization
+  alias EctoClass.Credentials.Schemas.Password
+  alias EctoClass.Profiles.Schemas.{Affiliation, Organization, User}
   alias EctoClass.Repo
 
   @iso8601_structs [
@@ -27,6 +28,33 @@ defmodule EctoClass.Factory do
       legal_name: "Random Legal Name #{:rand.uniform(99_999_999)}",
       document: Brcpfcnpj.cnpj_generate(),
       document_type: "cnpj"
+    }
+  end
+
+  def build(:user) do
+    %User{
+      username: "ramdom_#{:rand.uniform(99_999_999)}@gmail.com",
+      legal_name: "Random Legal Name #{:rand.uniform(99_999_999)}",
+      document: Brcpfcnpj.cpf_generate(),
+      document_type: "cpf",
+      address: %{
+        zip_code: "2577753",
+        street: "My Custom Street",
+        district: "My Custom district",
+        state: "RJ",
+        number: "120",
+        reference: "Any Reference"
+      },
+      password_credential: %Password{
+        password_hash: "any_hashed_value"
+      }
+    }
+  end
+
+  def build(:affiliation) do
+    %Affiliation{
+      user: build(:user),
+      organization: build(:organization)
     }
   end
 
