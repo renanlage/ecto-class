@@ -4,15 +4,42 @@ defmodule EctoClass.Profiles.Users do
   """
 
   alias EctoClass.Credentials.Schemas.Password
-  alias EctoClass.Profiles.Schemas.User
+  alias EctoClass.Profiles.Organizations
+  alias EctoClass.Profiles.Schemas.{User, Organization}
   alias EctoClass.Repo
+  alias Ecto.Multi
 
   import Ecto.Query
 
+  require Logger
+
+  def insert_everybody(user_params, org_params) do
+    Repo.transact(fn ->
+      Logger.info("Inserting everybody")
+
+      with {:ok, org} <- Organizations.create(org_params),
+           _ <- Logger.info("Organization was inserted"),
+           {:ok, user} <- create(user_params) do
+        Logger.info("Successfully inserted everybody")
+        {:ok, {user, org}}
+      end
+    end)
+  end
+
+  def insert_everybody_multi(user_params, org_params) do
+    Multi.new()
+    |> Multi.insert(:insert_organization, Organization.changeset(org_params))
+    |> Multi.run(:log, fn _repo, changes ->
+      org = Map.get(changes, :insert_organization)
+      Logger.info("Organization created with id = #{org.id}")
+      {:ok, :ok}
+    end)
+    |> Multi.insert(:insert_user, User.changeset(user_params))
+    |> Repo.transaction()
+  end
+
   def create(params) when is_map(params) do
-    params
-    |> User.changeset()
-    |> Repo.insert()
+    Repo.insert_schema(User, params)
   end
 
   def update(%User{} = user, params) do

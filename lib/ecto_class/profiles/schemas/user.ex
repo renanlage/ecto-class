@@ -8,6 +8,7 @@ defmodule EctoClass.Profiles.Schemas.User do
   import Ecto.Changeset
 
   alias EctoClass.Credentials.Schemas.Password
+  alias EctoClass.Profiles.Schemas.{Address, Organization, Affiliation}
 
   @required_fields [:username, :document, :legal_name]
   @optional_fields [:email_verified, :social_name, :document_type]
@@ -29,16 +30,12 @@ defmodule EctoClass.Profiles.Schemas.User do
       field :country_code, :string, default: "+55"
     end
 
-    embeds_one :address, Address, on_replace: :update do
-      field :zip_code, :string
-      field :street, :string
-      field :district, :string
-      field :number, :string
-      field :reference, :string
-    end
+    embeds_one :address, Address
 
     # Relations
     has_one :password_credential, Password, on_replace: :update, on_delete: :delete_all
+    has_many :affiliations, Affiliation, foreign_key: :user_id, references: :id
+    many_to_many :organizations, Organization, join_through: Affiliation
 
     timestamps()
   end
@@ -54,17 +51,11 @@ defmodule EctoClass.Profiles.Schemas.User do
     |> cast(params, @required_fields ++ @optional_fields)
     |> cast_assoc(:password_credential, required: false, with: &Password.changeset/2)
     |> cast_embed(:phones, with: &changeset_phones/2)
-    |> cast_embed(:address, required: true, with: &changeset_address/2)
+    |> cast_embed(:address, required: true)
     |> validate_required(@required_fields)
     |> validate_length(:legal_name, min: 2)
     |> validate_inclusion(:document_type, ["cpf", "rg"])
-    |> unique_constraint(:username)
-  end
-
-  defp changeset_address(model, params) do
-    model
-    |> cast(params, [:zip_code, :street, :district, :number, :reference])
-    |> validate_required([:street, :number])
+    |> unique_constraint(:username, name: :users_username_index)
   end
 
   defp changeset_phones(model, params) do
