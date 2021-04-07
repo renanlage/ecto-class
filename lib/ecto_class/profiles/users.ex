@@ -47,17 +47,13 @@ defmodule EctoClass.Profiles.Users do
     |> Repo.all()
   end
 
-  @doc "Returns how many users are found with the given filters"
-  @spec count(filters :: keyword()) :: integer()
-  def count(filters \\ []) when is_list(filters) do
+  def select_count(filters \\ []) when is_list(filters) do
     User
     |> where(^filters)
     |> Repo.aggregate(:count)
   end
 
-  @doc "Returns the users ordered by the given fields"
-  @spec sort(filters :: keyword(), sort_by :: keyword()) :: list(User.t())
-  def sort(filters \\ [], sort_by \\ [desc: :inserted_at])
+  def select_sort(filters \\ [], sort_by \\ [desc: :inserted_at])
       when is_list(filters) and is_list(sort_by) do
     User
     |> where(^filters)
@@ -65,7 +61,7 @@ defmodule EctoClass.Profiles.Users do
     |> Repo.all()
   end
 
-  def join(filters \\ []) do
+  def select_join(filters \\ []) do
     User
     |> join(:inner, [u], p in Password, on: u.id == p.user_id)
     |> where(^filters)
@@ -73,7 +69,32 @@ defmodule EctoClass.Profiles.Users do
     |> Repo.all()
   end
 
-  def preload([%User{} | _] = users) do
+  def select_preload([%User{} | _] = users) do
     Repo.preload(users, [:password_credential])
+  end
+
+  def select_subquery do
+    sub =
+      from(p in Password)
+      |> select([p], p.user_id)
+
+    from(u in User)
+    |> where([u, p], u.id not in subquery(sub))
+    |> Repo.all()
+  end
+
+  def select_group_by do
+    from(u in User)
+    |> group_by([u], u.document)
+    |> select([u], u.document)
+    |> Repo.all()
+  end
+
+  def select_having do
+    from(u in User)
+    |> group_by([u], u.document)
+    |> having([u], count(u.document) <= 1)
+    |> select([u], u.document)
+    |> Repo.all()
   end
 end
