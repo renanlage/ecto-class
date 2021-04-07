@@ -55,6 +55,7 @@ defmodule EctoClass.Profiles.Schemas.Organization do
   def changeset(%__MODULE__{} = model, params) when is_map(params) do
     model
     |> cast(params, @required_fields ++ @optional_fields)
+    |> validate_required(@required_fields)
     |> validate_inclusion(:document_type, @acceptable_document_types)
     |> validate_length(:company_name, min: 2)
     |> validate_length(:legal_name, min: 2)
