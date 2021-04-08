@@ -3,7 +3,7 @@ defmodule EctoClass.Profiles.Users do
   Domain module for handling user database transactions.
   """
 
-  alias EctoClass.Profiles.Schemas.User
+  alias EctoClass.Profiles.Schemas.{Password, User}
   alias EctoClass.Repo
 
   import Ecto.Query
@@ -95,6 +95,18 @@ defmodule EctoClass.Profiles.Users do
     |> Repo.one()
   end
 
+  @doc "Returns all users that has an password using subquery"
+  @spec subquery() :: list(User.t())
+  def subquery do
+    sub =
+      from(p in Password)
+      |> select([p], p.user_id)
+
+    from(u in User)
+    |> where([u, p], u.id not in subquery(sub))
+    |> Repo.all()
+  end
+
   ##############
   # Preloads
   ##############
@@ -120,6 +132,25 @@ defmodule EctoClass.Profiles.Users do
     User
     |> where(^filters)
     |> Repo.aggregate(:count)
+  end
+
+  @doc "Returns all users grouped by document"
+  @spec group_by() :: list(User.t())
+  def group_by do
+    from(u in User)
+    |> group_by([u], u.document)
+    |> select([u], u.document)
+    |> Repo.all()
+  end
+
+  @doc "Returns all users that has document duplicated"
+  @spec having() :: list(User.t())
+  def having do
+    from(u in User)
+    |> group_by([u], u.document)
+    |> having([u], count(u.document) <= 1)
+    |> select([u], u.document)
+    |> Repo.all()
   end
 
   #######
