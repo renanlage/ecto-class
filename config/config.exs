@@ -10,4 +10,6 @@ config :ecto_class, EctoClass.Repo,
   hostname: "localhost",
   port: 5432
 
+config :logger, level: :error
+
 import_config "./#{Mix.env()}.exs"

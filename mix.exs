@@ -62,8 +62,6 @@ defmodule EctoClass.MixProject do
         "setup"
       ],
       test: [
-        "ecto.create --quiet -r EctoClass.Repo",
-        "ecto.migrate -r EctoClass.Repo",
         "test"
       ]
     ]
